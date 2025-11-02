@@ -52,5 +52,20 @@
   {
     "product": "Sandwich",
     "ingredients": []
+  },
+  {
+    "product": "Café cortado",
+    "ingredients": [
+      {
+        "item": "Café",
+        "quantity": 15,
+        "unit": "gramos"
+      },
+      {
+        "item": "Leche",
+        "quantity": 30,
+        "unit": "ml"
+      }
+    ]
   }
 ]

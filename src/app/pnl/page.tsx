@@ -29,13 +29,18 @@ export default function PnlPage() {
   useEffect(() => {
     (async () => {
       const res = await fetch("/api/pnl", { cache: "no-store" });
-      const json = (await res.json()) as PnL;
+      const json = (await res.json()) as Partial<PnL>;
       setData({
-        monthlySales: json.monthlySales ?? 0,
-        cogsPct: json.cogsPct ?? 0,
-        deliveryPct: json.deliveryPct ?? 0,
-        fixed: Array.isArray(json.fixed) ? json.fixed : [],
-        materialsCost: json.materialsCost ?? 0,
+        monthlySales: Number(json.monthlySales ?? 0),
+        cogsPct: Number(json.cogsPct ?? 0),
+        deliveryPct: Number(json.deliveryPct ?? 0),
+        fixed: Array.isArray(json.fixed)
+          ? json.fixed.map((f) => ({
+              label: String(f?.label ?? ""),
+              amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+            }))
+          : [],
+        materialsCost: Number(json.materialsCost ?? 0),
       });
     })();
   }, []);
@@ -78,16 +83,33 @@ export default function PnlPage() {
     }
   }, [health]);
 
-  const update = (patch: Partial<PnL>) => setData((prev) => (prev ? { ...prev, ...patch } : prev));
+  const update = (patch: Partial<PnL>) =>
+    setData((prev) => (prev ? { ...prev, ...patch } : prev));
+
   const updateFixed = (i: number, patch: Partial<FixedCost>) =>
     setData((prev) => {
       if (!prev) return prev;
       const fixed = [...(prev.fixed ?? [])];
-      fixed[i] = { ...fixed[i], ...patch };
+      const current = fixed[i] ?? { label: "", amount: 0 };
+      // garantizamos tipos requeridos
+      const next: FixedCost = {
+        label: String(patch.label ?? current.label ?? ""),
+        amount: Number.isFinite(Number(patch.amount)) ? Number(patch.amount) : Number(current.amount) || 0,
+      };
+      fixed[i] = next;
       return { ...prev, fixed };
     });
+
   const addFixed = () =>
-    setData((prev) => (prev ? { ...prev, fixed: [...(prev.fixed ?? []), { label: "New cost", amount: 0 }] } : prev));
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            fixed: [...(prev.fixed ?? []), { label: "New cost", amount: 0 }],
+          }
+        : prev
+    );
+
   const removeFixed = (i: number) =>
     setData((prev) => {
       if (!prev) return prev;
@@ -105,24 +127,32 @@ export default function PnlPage() {
         headers: { "Content-Type": "application/json" },
         // guardamos solo lo que corresponde al P&L editable
         body: JSON.stringify({
-          monthlySales: data.monthlySales,
-          cogsPct: data.cogsPct,
-          deliveryPct: data.deliveryPct,
-          fixed: data.fixed ?? [],
+          monthlySales: Number(data.monthlySales ?? 0),
+          cogsPct: Number(data.cogsPct ?? 0),
+          deliveryPct: Number(data.deliveryPct ?? 0),
+          fixed: (data.fixed ?? []).map((f) => ({
+            label: String(f?.label ?? ""),
+            amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+          })),
         }),
       });
       if (!res.ok) throw new Error("Save failed");
       const refreshed = await fetch("/api/pnl", { cache: "no-store" });
-      const json = await refreshed.json();
+      const json = (await refreshed.json()) as Partial<PnL>;
       setData((prev) =>
         prev
           ? {
               ...prev,
-              monthlySales: json.monthlySales ?? prev.monthlySales,
-              cogsPct: json.cogsPct ?? prev.cogsPct,
-              deliveryPct: json.deliveryPct ?? prev.deliveryPct,
-              fixed: Array.isArray(json.fixed) ? json.fixed : prev.fixed,
-              materialsCost: json.materialsCost ?? prev.materialsCost ?? 0,
+              monthlySales: Number(json.monthlySales ?? prev.monthlySales ?? 0),
+              cogsPct: Number(json.cogsPct ?? prev.cogsPct ?? 0),
+              deliveryPct: Number(json.deliveryPct ?? prev.deliveryPct ?? 0),
+              fixed: Array.isArray(json.fixed)
+                ? json.fixed.map((f) => ({
+                    label: String(f?.label ?? ""),
+                    amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+                  }))
+                : prev.fixed,
+              materialsCost: Number(json.materialsCost ?? prev.materialsCost ?? 0),
             }
           : prev
       );
@@ -138,10 +168,15 @@ export default function PnlPage() {
   // ---- SNAPSHOTS ----
   const currentSnapshot: SnapshotData | null = data
     ? {
-        monthlySales: data.monthlySales ?? 0,
-        cogsPct: data.cogsPct ?? 0,
-        deliveryPct: data.deliveryPct ?? 0,
-        fixed: Array.isArray(data.fixed) ? data.fixed : [],
+        monthlySales: Number(data.monthlySales ?? 0),
+        cogsPct: Number(data.cogsPct ?? 0),
+        deliveryPct: Number(data.deliveryPct ?? 0),
+        fixed: Array.isArray(data.fixed)
+          ? data.fixed.map((f) => ({
+              label: String(f?.label ?? ""),
+              amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+            }))
+          : [],
       }
     : null;
 
@@ -151,23 +186,33 @@ export default function PnlPage() {
       prev
         ? {
             ...prev,
-            monthlySales: snap.monthlySales,
-            cogsPct: snap.cogsPct,
-            deliveryPct: snap.deliveryPct,
-            fixed: Array.isArray(snap.fixed) ? snap.fixed : [],
+            monthlySales: Number(snap.monthlySales ?? prev.monthlySales ?? 0),
+            cogsPct: Number(snap.cogsPct ?? prev.cogsPct ?? 0),
+            deliveryPct: Number(snap.deliveryPct ?? prev.deliveryPct ?? 0),
+            fixed: Array.isArray(snap.fixed)
+              ? snap.fixed.map((f) => ({
+                  label: String(f?.label ?? ""),
+                  amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+                }))
+              : [],
           }
         : {
-            monthlySales: snap.monthlySales,
-            cogsPct: snap.cogsPct,
-            deliveryPct: snap.deliveryPct,
-            fixed: Array.isArray(snap.fixed) ? snap.fixed : [],
+            monthlySales: Number(snap.monthlySales ?? 0),
+            cogsPct: Number(snap.cogsPct ?? 0),
+            deliveryPct: Number(snap.deliveryPct ?? 0),
+            fixed: Array.isArray(snap.fixed)
+              ? snap.fixed.map((f) => ({
+                  label: String(f?.label ?? ""),
+                  amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+                }))
+              : [],
             materialsCost: 0,
           }
     );
     setToast("📦 Snapshot loaded (remember to Save to persist)");
   };
 
-  if (!data) return <div className="p-6 text-gray-600">Loading P&L…</div>;
+  if (!data) return <div className="p-6 text-gray-600">Loading P&amp;L…</div>;
 
   const banner =
     health === "loss"
@@ -185,12 +230,7 @@ export default function PnlPage() {
       <div className={`rounded-lg border p-4 ${banner.cls}`}>{banner.text}</div>
 
       {/* Snapshots */}
-      {currentSnapshot && (
-        <SnapshotBar
-          current={currentSnapshot}
-          onLoadSnapshot={loadSnapshot}
-        />
-      )}
+      {currentSnapshot && <SnapshotBar current={currentSnapshot} onLoadSnapshot={loadSnapshot} />}
 
       {/* Inputs principales */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -270,21 +310,29 @@ export default function PnlPage() {
                 monthlySales: applied.monthlySales,
                 cogsPct: applied.cogsPct,
                 deliveryPct: applied.deliveryPct,
-                fixed: data?.fixed ?? [],
+                fixed: data?.fixed?.map((f) => ({
+                  label: String(f?.label ?? ""),
+                  amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+                })) ?? [],
               }),
             });
             if (!res.ok) throw new Error("Save failed");
             const refreshed = await fetch("/api/pnl", { cache: "no-store" });
-            const json = await refreshed.json();
+            const json = (await refreshed.json()) as Partial<PnL>;
             setData((prev) =>
               prev
                 ? {
                     ...prev,
-                    monthlySales: json.monthlySales ?? applied.monthlySales,
-                    cogsPct: json.cogsPct ?? applied.cogsPct,
-                    deliveryPct: json.deliveryPct ?? applied.deliveryPct,
-                    fixed: Array.isArray(json.fixed) ? json.fixed : prev.fixed,
-                    materialsCost: json.materialsCost ?? applied.materialsCost,
+                    monthlySales: Number(json.monthlySales ?? applied.monthlySales),
+                    cogsPct: Number(json.cogsPct ?? applied.cogsPct),
+                    deliveryPct: Number(json.deliveryPct ?? applied.deliveryPct),
+                    fixed: Array.isArray(json.fixed)
+                      ? json.fixed.map((f) => ({
+                          label: String(f?.label ?? ""),
+                          amount: Number.isFinite(Number(f?.amount)) ? Number(f?.amount) : 0,
+                        }))
+                      : prev.fixed,
+                    materialsCost: Number(json.materialsCost ?? applied.materialsCost),
                   }
                 : prev
             );

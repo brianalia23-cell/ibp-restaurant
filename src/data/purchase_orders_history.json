@@ -1,5 +1,62 @@
 [
   {
+    "id": "PO-1762101365361",
+    "date": "2025-11-02T16:36:05.361Z",
+    "totalItems": 7,
+    "totalOrderValue": 902.5,
+    "items": [
+      {
+        "item": "Flour",
+        "unit": "kg",
+        "quantity": 50,
+        "unitCost": 1.2,
+        "totalCost": 60
+      },
+      {
+        "item": "Butter",
+        "unit": "kg",
+        "quantity": 25,
+        "unitCost": 6.5,
+        "totalCost": 162.5
+      },
+      {
+        "item": "Eggs",
+        "unit": "unit",
+        "quantity": 500,
+        "unitCost": 0.2,
+        "totalCost": 100
+      },
+      {
+        "item": "Coffee Beans",
+        "unit": "g",
+        "quantity": 9000,
+        "unitCost": 0.02,
+        "totalCost": 180
+      },
+      {
+        "item": "Milk",
+        "unit": "ml",
+        "quantity": 100000,
+        "unitCost": 0.004,
+        "totalCost": 400
+      },
+      {
+        "item": "Arroz",
+        "unit": "kg",
+        "quantity": 80,
+        "unitCost": 0,
+        "totalCost": 0
+      },
+      {
+        "item": "Pollo",
+        "unit": "kg",
+        "quantity": 150,
+        "unitCost": 0,
+        "totalCost": 0
+      }
+    ]
+  },
+  {
     "id": "PO-1762015587911",
     "date": "2025-11-01T16:46:27.911Z",
     "totalItems": 5,

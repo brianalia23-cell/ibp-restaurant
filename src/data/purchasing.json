@@ -39,14 +39,14 @@
     {
       "item": "Arroz",
       "unit": "kg",
-      "required": 0,
+      "required": 80,
       "unitCost": 0,
       "totalCost": 0
     },
     {
       "item": "Pollo",
       "unit": "kg",
-      "required": 0,
+      "required": 150,
       "unitCost": 0,
       "totalCost": 0
     }

@@ -34,12 +34,14 @@ export default function PricingPage() {
   const [showImport, setShowImport] = useState(false);
   const [csvText, setCsvText] = useState("");
 
-  const filtered = useMemo(() => {
-    if (!data?.items) return [];
+  const filtered: PricingItem[] = useMemo(() => {
+    const items: PricingItem[] = Array.isArray(data?.items) ? data!.items : [];
     const q = filter.trim().toLowerCase();
-    if (!q) return data.items;
-    return data.items.filter(
-      (i) => i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q)
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        String(i?.name ?? "").toLowerCase().includes(q) ||
+        String(i?.sku ?? "").toLowerCase().includes(q)
     );
   }, [data, filter]);
 
@@ -69,7 +71,10 @@ export default function PricingPage() {
 
   const createProduct = async () => {
     try {
-      const sku = newSku.trim() || `SKU-${newName.toUpperCase().replace(/\s+/g, "-")}`;
+      const sku = (newSku || `SKU-${newName}` || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "-");
       const name = newName.trim();
       const priceNum = Number(newPrice || 0);
       if (!name) return alert("Nombre requerido");
@@ -91,25 +96,29 @@ export default function PricingPage() {
   };
 
   const importCSV = async () => {
-    // Formato esperado: sku,name,unitPrice  (con o sin encabezado)
+    // Formato esperado: sku,name,unitPrice (con o sin encabezado)
     try {
-      const lines = csvText
+      const lines: string[] = String(csvText ?? "")
         .split("\n")
         .map((l) => l.trim())
-        .filter(Boolean);
+        .filter((l) => l.length > 0);
 
-      let rows: { sku?: string; name?: string; unitPrice?: number }[] = [];
+      const rows: { sku?: string; name?: string; unitPrice?: number }[] = [];
+
       for (const line of lines) {
-        const parts = line.split(",").map((x) => x.trim());
+        const parts: string[] = line.split(",").map((x) => x.trim());
         if (parts.length < 2) continue;
-        // heurística de header
-        if (/^sku$/i.test(parts[0]) || /^name$/i.test(parts[0])) continue;
 
-        const [skuMaybe, nameMaybe, priceMaybe] = parts;
-        const hasPrice = parts.length >= 3 && !isNaN(Number(priceMaybe));
+        // Evitamos TS2345: siempre casteamos a string
+        const firstCol = String(parts[0] ?? "");
+        if (/^sku$/i.test(firstCol) || /^name$/i.test(firstCol)) continue;
+
+        const [skuMaybe = "", nameMaybe = "", priceMaybe = ""] = parts;
+        const hasPrice = parts.length >= 3 && !Number.isNaN(Number(priceMaybe));
+
         rows.push({
-          sku: skuMaybe || undefined,
-          name: nameMaybe || undefined,
+          sku: skuMaybe ? String(skuMaybe) : undefined,
+          name: nameMaybe ? String(nameMaybe) : undefined,
           unitPrice: hasPrice ? Number(priceMaybe) : undefined,
         });
       }
@@ -188,8 +197,9 @@ export default function PricingPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row) => {
-              const priceStr = editedPrices[row.sku] ?? row.unitPrice.toString();
+            {filtered.map((row, idx) => {
+              const skuSafe: string = String(row?.sku ?? "");
+              const priceStr: string = editedPrices[skuSafe] ?? row.unitPrice.toString();
               const previewPrice = Number(priceStr) || 0;
               const previewMargin =
                 previewPrice > 0
@@ -204,15 +214,15 @@ export default function PricingPage() {
                   : "text-green-700";
 
               return (
-                <tr key={row.sku} className="border-b hover:bg-gray-50">
-                  <td className="p-3 font-mono">{row.sku}</td>
+                <tr key={skuSafe || `${row.name}-${idx}`} className="border-b hover:bg-gray-50">
+                  <td className="p-3 font-mono">{skuSafe || "—"}</td>
                   <td className="p-3">{row.name}</td>
                   <td className="p-3 text-right">${(row.unitCost || 0).toFixed(2)}</td>
                   <td className="p-3 text-right">
                     <input
                       className="w-28 rounded-md border px-2 py-1 text-right"
                       value={priceStr}
-                      onChange={(e) => handlePriceChange(row.sku, e.target.value)}
+                      onChange={(e) => handlePriceChange(skuSafe, e.target.value)}
                       inputMode="decimal"
                     />
                   </td>
@@ -221,11 +231,11 @@ export default function PricingPage() {
                   </td>
                   <td className="p-3 text-right">
                     <button
-                      disabled={saving === row.sku}
-                      onClick={() => savePrice(row.sku, Number(priceStr))}
+                      disabled={saving === skuSafe}
+                      onClick={() => savePrice(skuSafe, Number(priceStr))}
                       className="rounded-md bg-blue-600 px-3 py-1 text-white hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {saving === row.sku ? "Guardando…" : "Guardar"}
+                      {saving === skuSafe ? "Guardando…" : "Guardar"}
                     </button>
                   </td>
                 </tr>
@@ -292,7 +302,7 @@ export default function PricingPage() {
       {/* Modal IMPORT CSV */}
       {showImport && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg space-y-4">
+        <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg space-y-4">
             <h3 className="text-lg font-semibold">⬆️ Importar CSV</h3>
             <p className="text-sm text-gray-600">
               Formato: <code>sku,name,unitPrice</code> (con o sin encabezado).  

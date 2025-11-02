@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
@@ -6,101 +6,137 @@ const dataDir = path.join(process.cwd(), "src/data");
 
 function readJSON<T>(file: string, fallback: T): T {
   try {
-    return JSON.parse(fs.readFileSync(file, "utf-8"));
+    const raw = fs.readFileSync(file, "utf-8");
+    return (JSON.parse(raw) as T) ?? fallback;
   } catch {
     return fallback;
   }
 }
 
-function writeJSON(file: string, data: any) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
+type InventoryRow = {
+  item: string;
+  unit?: string;
+  suggestedPurchase?: number; // cantidad sugerida
+};
 
-export async function POST() {
+type PriceRow = {
+  item: string;
+  cost?: number; // costo unitario
+};
+
+type PurchasingRow = {
+  item: string;
+  unit?: string;
+  required?: number;
+  toBuy?: number;
+  unitCost?: number;
+  cost?: number;
+};
+
+type ItemToOrder = {
+  item: string;
+  unit?: string;
+  quantity: number;
+  unitCost: number;
+  totalCost: number;
+};
+
+type Order = {
+  id: string;
+  date: string;
+  totalItems: number;
+  totalOrderValue: number;
+  items: ItemToOrder[];
+};
+
+export async function POST(_req: NextRequest) {
   try {
-    const inventoryPath = path.join(dataDir, "inventory.json");
-    const pricesPath = path.join(dataDir, "prices_purchase.json");
-    const purchasingPath = path.join(dataDir, "purchasing.json");
+    const inventory = readJSON<InventoryRow[]>(
+      path.join(dataDir, "inventory.json"),
+      []
+    );
+    const prices = readJSON<PriceRow[]>(
+      path.join(dataDir, "prices_purchase.json"),
+      []
+    );
+    const purchasing = readJSON<{ items?: PurchasingRow[] }>(
+      path.join(dataDir, "purchasing.json"),
+      { items: [] }
+    );
     const historyPath = path.join(dataDir, "purchase_orders_history.json");
 
-    const inventory = readJSON<any[]>(inventoryPath, []);
-    const prices = readJSON<any[]>(pricesPath, []);
-    const purchasing = readJSON<any>(purchasingPath, { items: [] });
-
-    // ✅ Identificar ítems con compra sugerida
-    const suggested = inventory
-      .filter((i: any) => i.suggestedPurchase && i.suggestedPurchase > 0)
-      .map((i: any) => {
-        const price: number = prices.find((p: any) => p.item === i.item)?.cost ?? 0;
-        const total = i.suggestedPurchase * price;
+    // ✅ Filtrar productos con compra sugerida > 0 y mapear a ítems de orden
+    const suggested: ItemToOrder[] = (inventory ?? [])
+      .filter((i) => (i?.suggestedPurchase ?? 0) > 0)
+      .map((i) => {
+        const unitCost =
+          Number(
+            prices.find((p) => p?.item === i?.item)?.cost
+          ) || 0;
+        const quantity = Number(i?.suggestedPurchase) || 0;
+        const totalCost = Number((quantity * unitCost).toFixed(2));
 
         return {
-          item: i.item,
-          unit: i.unit,
-          quantity: i.suggestedPurchase,
-          unitCost: price,
-          totalCost: parseFloat(total.toFixed(2)),
+          item: String(i?.item ?? ""),
+          unit: i?.unit,
+          quantity,
+          unitCost,
+          totalCost,
         };
       });
 
-    const itemsToOrder: any[] =
+    // Si no hay sugerencias, usar los datos del purchasing.json
+    const itemsToOrder: ItemToOrder[] =
       suggested.length > 0
         ? suggested
-        : (purchasing.items || []).map((p: any) => {
-            const qty = p.required || p.toBuy || 0;
-            const cost = p.unitCost || p.cost || 0;
+        : (purchasing?.items ?? []).map((p) => {
+            const quantity = Number(p?.required ?? p?.toBuy ?? 0) || 0;
+            const unitCost = Number(p?.unitCost ?? p?.cost ?? 0) || 0;
+            const totalCost = Number((quantity * unitCost).toFixed(2));
             return {
-              item: p.item,
-              unit: p.unit,
-              quantity: qty,
-              unitCost: cost,
-              totalCost: parseFloat((qty * cost).toFixed(2)),
+              item: String(p?.item ?? ""),
+              unit: p?.unit,
+              quantity,
+              unitCost,
+              totalCost,
             };
           });
 
-    const totalOrderValue = itemsToOrder.reduce(
-      (sum: number, i: any) => sum + i.totalCost,
-      0
+    // Total de la orden
+    const totalOrderValue = Number(
+      (itemsToOrder ?? []).reduce(
+        (sum: number, i: ItemToOrder) =>
+          sum +
+          (Number.isFinite(i.totalCost)
+            ? Number(i.totalCost)
+            : (Number(i.quantity) || 0) * (Number(i.unitCost) || 0)),
+        0
+      ).toFixed(2)
     );
 
     // ✅ Crear ID único
     const id = `PO-${Date.now()}`;
-    const order = {
+
+    const order: Order = {
       id,
       date: new Date().toISOString(),
-      totalItems: itemsToOrder.length,
-      totalOrderValue: parseFloat(totalOrderValue.toFixed(2)),
+      totalItems: (itemsToOrder ?? []).length,
+      totalOrderValue,
       items: itemsToOrder,
     };
 
-    // Guardar orden actual e historial
-    writeJSON(path.join(dataDir, "purchase_order.json"), order);
-    const history = readJSON<any[]>(historyPath, []);
+    // Guardar como última orden
+    fs.writeFileSync(
+      path.join(dataDir, "purchase_order.json"),
+      JSON.stringify(order, null, 2)
+    );
+
+    // Agregar al historial (al inicio)
+    const history = readJSON<Order[]>(historyPath, []);
     history.unshift(order);
-    writeJSON(historyPath, history);
+    fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
 
-    // ✅ Actualizar inventario con las compras recibidas
-    const updatedInventory = inventory.map((i: any) => {
-      const ordered = itemsToOrder.find((o: any) => o.item === i.item);
-      const newStock = ordered ? (i.stock || 0) + ordered.quantity : i.stock || 0;
-      const newAlert =
-        newStock <= 0
-          ? "Out of Stock"
-          : newStock < (i.safetyStock || 0)
-          ? "Low Stock"
-          : "OK";
-
-      return {
-        ...i,
-        stock: parseFloat(newStock.toFixed(2)),
-        suggestedPurchase: 0,
-        alert: newAlert,
-      };
-    });
-
-    writeJSON(inventoryPath, updatedInventory);
-
-    console.log(`💾 Purchase order saved and inventory updated — Total: $${order.totalOrderValue}`);
+    console.log(`💾 Purchase order saved — Total: $${order.totalOrderValue}`);
     return NextResponse.json(order);
   } catch (err) {
     console.error("❌ Error in /api/purchase-order:", err);

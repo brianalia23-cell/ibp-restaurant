@@ -10,6 +10,8 @@ type Recipe = { product: string; ingredients: Ingredient[] };
 
 export default function CatalogPage() {
   const { data, error, mutate } = useSWR<Recipe[]>("/api/recipes", fetcher);
+  const recipes: Recipe[] = Array.isArray(data) ? data : [];
+
   const [showNew, setShowNew] = useState(false);
   const [product, setProduct] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>([
@@ -17,28 +19,43 @@ export default function CatalogPage() {
   ]);
 
   const addIngredient = () =>
-    setIngredients([...ingredients, { item: "", quantity: 0, unit: "" }]);
+    setIngredients((prev) => [...prev, { item: "", quantity: 0, unit: "" }]);
 
   const handleChange = (index: number, field: keyof Ingredient, value: string) => {
-    const newIngs = [...ingredients];
-    if (field === "quantity") newIngs[index][field] = Number(value);
-    else newIngs[index][field] = value;
-    setIngredients(newIngs);
+    setIngredients((prev) => {
+      const next = [...prev];
+      if (!next[index]) next[index] = { item: "", quantity: 0, unit: "" };
+      if (field === "quantity") next[index][field] = Number(value);
+      else next[index][field] = value;
+      return next;
+    });
   };
 
   const saveRecipe = async () => {
     try {
+      const payload: Recipe = {
+        product: (product ?? "").trim(),
+        ingredients: (ingredients ?? []).map((i) => ({
+          item: String(i?.item ?? "").trim(),
+          quantity: Number.isFinite(Number(i?.quantity)) ? Number(i?.quantity) : 0,
+          unit: String(i?.unit ?? "").trim(),
+        })),
+      };
+      if (!payload.product) {
+        alert("Nombre de producto requerido");
+        return;
+      }
       const res = await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product, ingredients }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Save failed");
       setProduct("");
       setIngredients([{ item: "", quantity: 0, unit: "" }]);
       setShowNew(false);
       await mutate();
-    } catch (e) {
+    } catch {
       alert("Error guardando la receta");
     }
   };
@@ -49,7 +66,7 @@ export default function CatalogPage() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">📖 Catálogo & Recetas</h1>
+        <h1 className="text-2xl font-semibold">📖 Catálogo &amp; Recetas</h1>
         <button
           onClick={() => setShowNew(true)}
           className="rounded-md bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
@@ -67,12 +84,12 @@ export default function CatalogPage() {
             </tr>
           </thead>
           <tbody>
-            {data.map((r) => (
-              <tr key={r.product} className="border-b">
-                <td className="p-3 font-medium">{r.product}</td>
+            {(recipes ?? []).map((r) => (
+              <tr key={r?.product ?? crypto.randomUUID()} className="border-b">
+                <td className="p-3 font-medium">{r?.product ?? "—"}</td>
                 <td className="p-3">
-                  {r.ingredients
-                    .map((i) => `${i.item} (${i.quantity} ${i.unit})`)
+                  {(r?.ingredients ?? [])
+                    .map((i) => `${i?.item ?? "?"} (${Number(i?.quantity ?? 0)} ${i?.unit ?? ""})`)
                     .join(", ")}
                 </td>
               </tr>
@@ -95,23 +112,23 @@ export default function CatalogPage() {
             </label>
 
             <div className="space-y-3">
-              {ingredients.map((ing, idx) => (
+              {(ingredients ?? []).map((ing, idx) => (
                 <div key={idx} className="flex gap-2">
                   <input
-                    value={ing.item}
+                    value={ing?.item ?? ""}
                     onChange={(e) => handleChange(idx, "item", e.target.value)}
                     placeholder="Ingrediente"
                     className="flex-1 rounded-md border px-2 py-1"
                   />
                   <input
                     type="number"
-                    value={ing.quantity}
+                    value={Number.isFinite(ing?.quantity) ? Number(ing?.quantity) : 0}
                     onChange={(e) => handleChange(idx, "quantity", e.target.value)}
                     placeholder="Cantidad"
                     className="w-24 rounded-md border px-2 py-1 text-right"
                   />
                   <input
-                    value={ing.unit}
+                    value={ing?.unit ?? ""}
                     onChange={(e) => handleChange(idx, "unit", e.target.value)}
                     placeholder="Unidad"
                     className="w-24 rounded-md border px-2 py-1"

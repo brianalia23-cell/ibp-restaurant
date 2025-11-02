@@ -1,102 +1,94 @@
-import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+// src/app/api/purchase-order/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getPurchaseOrderById,
+  replacePurchaseOrder,
+  updatePurchaseOrder,
+  deletePurchaseOrder,
+} from "@/lib/db/purchaseOrders";
+import type { PurchaseOrder } from "@/types/purchaseOrder";
 
-const dataDir = path.join(process.cwd(), "src/data");
-
-function readJSON<T>(file: string, fallback: T): T {
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf-8"));
-  } catch {
-    return fallback;
-  }
+// Helpers de respuesta
+function badRequest(message: string) {
+  return NextResponse.json({ error: message }, { status: 400 });
+}
+function notFound(id: string) {
+  return NextResponse.json({ error: `Purchase order ${id} not found` }, { status: 404 });
+}
+function ok<T>(data: T, init?: ResponseInit) {
+  return NextResponse.json(data, init);
 }
 
+// GET /api/purchase-order/[id]
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-  const url = new URL(req.url);
-  const format = url.searchParams.get("format") || "pdf";
+  const { id } = await params;
+  if (!id || typeof id !== "string") return badRequest("Missing or invalid 'id' param");
 
-  const orderPath = path.join(dataDir, "purchase_order.json");
-  if (!fs.existsSync(orderPath)) {
-    return NextResponse.json({ error: "No purchase order found" }, { status: 404 });
+  const po = await getPurchaseOrderById(id);
+  if (!po) return notFound(id);
+
+  return ok<PurchaseOrder>(po);
+}
+
+// PUT /api/purchase-order/[id]  (reemplaza completo)
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  if (!id || typeof id !== "string") return badRequest("Missing or invalid 'id' param");
+
+  let body: Partial<PurchaseOrder>;
+  try {
+    body = (await req.json()) as Partial<PurchaseOrder>;
+  } catch {
+    return badRequest("Invalid JSON body");
   }
 
-  const order = readJSON<any>(orderPath, null);
-  if (!order) {
-    return NextResponse.json({ error: "Invalid order" }, { status: 400 });
+  body.id = id;
+  const exists = await getPurchaseOrderById(id);
+  if (!exists) return notFound(id);
+
+  const updated = await replacePurchaseOrder(id, body as PurchaseOrder);
+  return ok<PurchaseOrder>(updated);
+}
+
+// PATCH /api/purchase-order/[id]  (parcial)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  if (!id || typeof id !== "string") return badRequest("Missing or invalid 'id' param");
+
+  let body: Partial<PurchaseOrder>;
+  try {
+    body = (await req.json()) as Partial<PurchaseOrder>;
+  } catch {
+    return badRequest("Invalid JSON body");
   }
 
-  // ✅ CSV export
-  if (format === "csv") {
-    const header = "Item,Unit,Quantity,Unit Cost,Total Cost\n";
-    const rows = order.items
-      .map(
-        (i: any) =>
-          `${i.item},${i.unit},${i.quantity},${i.unitCost},${i.totalCost}`
-      )
-      .join("\n");
-    const csv = `${header}${rows}\n\nTotal Items:,${order.totalItems}\nTotal Order Value:,${order.totalOrderValue}`;
-    return new NextResponse(csv, {
-      headers: {
-        "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename=purchase-order-${id}.csv`,
-      },
-    });
-  }
+  const exists = await getPurchaseOrderById(id);
+  if (!exists) return notFound(id);
 
-  // ✅ PDF export
-  const pdfDoc = await PDFDocument.create();
-  let page = pdfDoc.addPage([600, 800]);
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const { height } = page.getSize();
+  const merged = await updatePurchaseOrder(id, body);
+  return ok<PurchaseOrder>(merged);
+}
 
-  page.drawText(`Purchase Order — ${id}`, {
-    x: 50,
-    y: height - 50,
-    size: 20,
-    font,
-    color: rgb(0, 0.2, 0.6),
-  });
+// DELETE /api/purchase-order/[id]
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  if (!id || typeof id !== "string") return badRequest("Missing or invalid 'id' param");
 
-  let y = height - 100;
-  const lineHeight = 14;
+  const exists = await getPurchaseOrderById(id);
+  if (!exists) return notFound(id);
 
-  const drawLine = (text: string, size = 12) => {
-    page.drawText(text, { x: 50, y, size, font });
-    y -= lineHeight;
-    if (y < 50) {
-      page = pdfDoc.addPage([600, 800]);
-      y = page.getSize().height - 50;
-    }
-  };
-
-  drawLine(`Date: ${new Date(order.date).toLocaleDateString()}`);
-  drawLine(`Total Items: ${order.totalItems}`);
-  drawLine(`Total Order Value: $${order.totalOrderValue.toFixed(2)}`);
-  y -= 10;
-  drawLine("Items:", 14);
-  y -= 5;
-
-  order.items.forEach((item: any, index: number) => {
-    drawLine(
-      `${index + 1}. ${item.item} — ${item.quantity} ${item.unit} @ $${item.unitCost.toFixed(
-        2
-      )} = $${item.totalCost.toFixed(2)}`,
-      10
-    );
-  });
-
-  const pdfBytes = await pdfDoc.save();
-
-  return new NextResponse(Buffer.from(pdfBytes), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=purchase-order-${id}.pdf`,
-    },
-  });
+  await deletePurchaseOrder(id);
+  return ok<{ ok: true }>({ ok: true }, { status: 200 });
 }
