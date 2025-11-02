@@ -1,0 +1,29 @@
+[
+    {
+      "sku": "SKU-CRS",
+      "name": "Croissant",
+      "ingredients": [
+        { "item": "Flour", "unit": "kg", "quantity": 0.1 },
+        { "item": "Butter", "unit": "kg", "quantity": 0.05 },
+        { "item": "Eggs", "unit": "unit", "quantity": 0.5 }
+      ]
+    },
+    {
+      "sku": "SKU-LATTE",
+      "name": "Coffee Latte",
+      "ingredients": [
+        { "item": "Coffee Beans", "unit": "g", "quantity": 15 },
+        { "item": "Milk", "unit": "ml", "quantity": 200 }
+      ]
+    },
+    {
+      "sku": "SKU-SAND",
+      "name": "Sandwich",
+      "ingredients": [
+        { "item": "Bread", "unit": "unit", "quantity": 2 },
+        { "item": "Ham", "unit": "g", "quantity": 50 },
+        { "item": "Cheese", "unit": "g", "quantity": 30 }
+      ]
+    }
+  ]
+  

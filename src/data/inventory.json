@@ -1,0 +1,66 @@
+[
+  {
+    "item": "Flour",
+    "unit": "kg",
+    "stock": 139,
+    "safetyStock": 20,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Butter",
+    "unit": "kg",
+    "stock": 69.5,
+    "safetyStock": 10,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Eggs",
+    "unit": "unit",
+    "stock": 695,
+    "safetyStock": 100,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Coffee Beans",
+    "unit": "g",
+    "stock": 30250,
+    "safetyStock": 2000,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Milk",
+    "unit": "ml",
+    "stock": 400000,
+    "safetyStock": 15000,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Bread",
+    "unit": "unit",
+    "stock": 280,
+    "safetyStock": 40,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Ham",
+    "unit": "g",
+    "stock": 8500,
+    "safetyStock": 5000,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  },
+  {
+    "item": "Cheese",
+    "unit": "g",
+    "stock": 6900,
+    "safetyStock": 4000,
+    "suggestedPurchase": 0,
+    "alert": "OK"
+  }
+]

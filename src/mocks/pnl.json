@@ -1,0 +1,11 @@
+{
+  "monthlySales": 30000,
+  "cogsPct": 0.35,
+  "deliveryPct": 0.10,
+  "fixed": [
+    { "label": "Rent", "amount": 2000 },
+    { "label": "Salaries", "amount": 8000 },
+    { "label": "Utilities", "amount": 600 },
+    { "label": "Taxes", "amount": 700 }
+  ]
+}

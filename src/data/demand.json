@@ -1,0 +1,18 @@
+[
+  {
+    "product": "Croissant",
+    "quantity": 500
+  },
+  {
+    "product": "Coffee Latte",
+    "quantity": 500
+  },
+  {
+    "product": "Sandwich",
+    "quantity": 0
+  },
+  {
+    "product": "Arroz con pollo",
+    "quantity": 0
+  }
+]

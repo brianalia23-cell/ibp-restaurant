@@ -1,0 +1,5 @@
+[
+  { "id": "P-CROISSANT", "name": "Croissant", "sku": "CROISSANT", "active": true },
+  { "id": "P-LATTE", "name": "Coffee Latte", "sku": "LATTE", "active": true },
+  { "id": "P-SANDWICH", "name": "Sandwich", "sku": "SANDWICH", "active": true }
+]

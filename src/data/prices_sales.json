@@ -1,0 +1,22 @@
+[
+  {
+    "sku": "SKU-CROISSANT",
+    "name": "Croissant",
+    "unitPrice": 2.5
+  },
+  {
+    "sku": "SKU-COFFEE-LATTE",
+    "name": "Coffee Latte",
+    "unitPrice": 3
+  },
+  {
+    "sku": "SKU-SANDWICH",
+    "name": "Sandwich",
+    "unitPrice": 4.5
+  },
+  {
+    "sku": "SKU-ARROZ-POLLO",
+    "name": "Arroz con pollo",
+    "unitPrice": 5
+  }
+]

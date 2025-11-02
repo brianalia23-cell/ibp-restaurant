@@ -1,0 +1,23 @@
+{
+  "monthlySales": 2850,
+  "cogsPct": 0.35,
+  "deliveryPct": 0.15,
+  "fixed": [
+    {
+      "label": "Rent",
+      "amount": 1200
+    },
+    {
+      "label": "Salaries",
+      "amount": 1600
+    },
+    {
+      "label": "Utilities",
+      "amount": 500
+    }
+  ],
+  "materialsCost": 902.5,
+  "fixedTotal": 3300,
+  "grossMargin": 522.5,
+  "netProfit": -2777.5
+}

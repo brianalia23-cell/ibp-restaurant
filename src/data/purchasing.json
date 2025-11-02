@@ -1,0 +1,54 @@
+{
+  "totalMaterialsCost": 902.5,
+  "items": [
+    {
+      "item": "Flour",
+      "unit": "kg",
+      "required": 50,
+      "unitCost": 1.2,
+      "totalCost": 60
+    },
+    {
+      "item": "Butter",
+      "unit": "kg",
+      "required": 25,
+      "unitCost": 6.5,
+      "totalCost": 162.5
+    },
+    {
+      "item": "Eggs",
+      "unit": "unit",
+      "required": 500,
+      "unitCost": 0.2,
+      "totalCost": 100
+    },
+    {
+      "item": "Coffee Beans",
+      "unit": "g",
+      "required": 9000,
+      "unitCost": 0.02,
+      "totalCost": 180
+    },
+    {
+      "item": "Milk",
+      "unit": "ml",
+      "required": 100000,
+      "unitCost": 0.004,
+      "totalCost": 400
+    },
+    {
+      "item": "Arroz",
+      "unit": "kg",
+      "required": 0,
+      "unitCost": 0,
+      "totalCost": 0
+    },
+    {
+      "item": "Pollo",
+      "unit": "kg",
+      "required": 0,
+      "unitCost": 0,
+      "totalCost": 0
+    }
+  ]
+}

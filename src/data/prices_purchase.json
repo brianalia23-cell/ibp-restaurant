@@ -1,0 +1,11 @@
+[
+    { "item": "Flour", "unit": "kg", "cost": 1.2 },
+    { "item": "Butter", "unit": "kg", "cost": 6.5 },
+    { "item": "Eggs", "unit": "unit", "cost": 0.2 },
+    { "item": "Coffee Beans", "unit": "g", "cost": 0.02 },
+    { "item": "Milk", "unit": "ml", "cost": 0.004 },
+    { "item": "Bread", "unit": "unit", "cost": 0.3 },
+    { "item": "Ham", "unit": "g", "cost": 0.015 },
+    { "item": "Cheese", "unit": "g", "cost": 0.02 }
+  ]
+  

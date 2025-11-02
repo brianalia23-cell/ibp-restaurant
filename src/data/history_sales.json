@@ -1,0 +1,11 @@
+[
+    { "product": "Croissant", "date": "2025-10-01", "qty": 120 },
+    { "product": "Croissant", "date": "2025-10-08", "qty": 140 },
+    { "product": "Croissant", "date": "2025-10-15", "qty": 160 },
+    { "product": "Croissant", "date": "2025-10-22", "qty": 180 },
+    { "product": "Coffee Latte", "date": "2025-10-01", "qty": 200 },
+    { "product": "Coffee Latte", "date": "2025-10-08", "qty": 220 },
+    { "product": "Coffee Latte", "date": "2025-10-15", "qty": 210 },
+    { "product": "Coffee Latte", "date": "2025-10-22", "qty": 230 }
+  ]
+  

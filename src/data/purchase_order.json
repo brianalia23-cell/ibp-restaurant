@@ -1,0 +1,43 @@
+{
+  "id": "PO-1762015587911",
+  "date": "2025-11-01T16:46:27.911Z",
+  "totalItems": 5,
+  "totalOrderValue": 822.5,
+  "items": [
+    {
+      "item": "Flour",
+      "unit": "kg",
+      "quantity": 50,
+      "unitCost": 1.2,
+      "totalCost": 60
+    },
+    {
+      "item": "Butter",
+      "unit": "kg",
+      "quantity": 25,
+      "unitCost": 6.5,
+      "totalCost": 162.5
+    },
+    {
+      "item": "Eggs",
+      "unit": "unit",
+      "quantity": 250,
+      "unitCost": 0.2,
+      "totalCost": 50
+    },
+    {
+      "item": "Coffee Beans",
+      "unit": "g",
+      "quantity": 7500,
+      "unitCost": 0.02,
+      "totalCost": 150
+    },
+    {
+      "item": "Milk",
+      "unit": "ml",
+      "quantity": 100000,
+      "unitCost": 0.004,
+      "totalCost": 400
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "sku": "SKU-CRS",
+    "name": "Croissant",
+    "unitPrice": 2.5,
+    "unitCost": 0.55,
+    "marginPct": 78.2
+  },
+  {
+    "sku": "SKU-LATTE",
+    "name": "Coffee Latte",
+    "unitPrice": 3,
+    "unitCost": 1.1,
+    "marginPct": 63.3
+  },
+  {
+    "sku": "SKU-SAND",
+    "name": "Sandwich",
+    "unitPrice": 5.5,
+    "unitCost": 1.95,
+    "marginPct": 64.5
+  }
+]

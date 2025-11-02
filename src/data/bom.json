@@ -1,0 +1,56 @@
+[
+  {
+    "product": "Croissant",
+    "ingredients": [
+      {
+        "item": "Flour",
+        "quantity": 0.1,
+        "unit": "kg"
+      },
+      {
+        "item": "Butter",
+        "quantity": 0.05,
+        "unit": "kg"
+      },
+      {
+        "item": "Eggs",
+        "quantity": 1,
+        "unit": "unit"
+      }
+    ]
+  },
+  {
+    "product": "Coffee Latte",
+    "ingredients": [
+      {
+        "item": "Coffee Beans",
+        "quantity": 18,
+        "unit": "g"
+      },
+      {
+        "item": "Milk",
+        "quantity": 200,
+        "unit": "ml"
+      }
+    ]
+  },
+  {
+    "product": "Arroz con pollo",
+    "ingredients": [
+      {
+        "item": "Arroz",
+        "quantity": 0.08,
+        "unit": "kg"
+      },
+      {
+        "item": "Pollo",
+        "quantity": 0.15,
+        "unit": "kg"
+      }
+    ]
+  },
+  {
+    "product": "Sandwich",
+    "ingredients": []
+  }
+]

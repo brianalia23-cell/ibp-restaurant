@@ -1,0 +1,22 @@
+{
+  "ignore": [
+    "node_modules/**",
+    ".next/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    ".turbo/**",
+    ".vercel/**",
+    "*.log",
+    ".DS_Store",
+    ".env*"
+  ],
+  "semi_ignore": [
+    "src/mocks/**"
+  ],
+  "priority": [
+    "src/app/**",
+    "src/lib/**",
+    "src/types/**"
+  ]
+}
